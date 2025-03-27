@@ -358,7 +358,8 @@ async def on_ready():
 # Botのトークンを指定（デベロッパーサイトで確認可能）
 #client.run("")
 keep_alive()
-try:
-    client.run(os.environ['TOKEN'])
-except:
-    os.system("kill")
+TOKEN = os.getenv("DISCORD_TOKEN")
+if TOKEN:
+    client.run(TOKEN)
+else:
+    print("Tokenが見つかりませんでした")
