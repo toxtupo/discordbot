@@ -6,7 +6,15 @@ import traceback
 import discord
 import re
 from discord.ext import commands
+
+
 #from discord_slash import SlashCommand, SlashContext    #スラッシュcommandラブラリ
+
+#Koyebで追加
+from server import server_thread
+import dotenv
+dotenv.load_dotenv()
+TOKEN = os.environ.get("TOKEN")
 
 intents = discord.Intents.default()
 intents.members = True
