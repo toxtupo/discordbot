@@ -1,7 +1,7 @@
 # coding: UTF-8
 # DiscordBot.py
 import os
-from keep import keep_alive
+#from keep import keep_alive
 import traceback
 import discord
 import re
