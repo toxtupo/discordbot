@@ -365,4 +365,4 @@ async def on_ready():
 
 # Botのトークンを指定（デベロッパーサイトで確認可能）
 server_thread()
-client.run(TOKEN))
+client.run(TOKEN)
