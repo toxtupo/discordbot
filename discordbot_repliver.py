@@ -197,16 +197,6 @@ async def on_message(message):
             else:
                 print(f"{message.author.name} は既にロール {role.name} を持っています。")
 
-# === サーバー参加時に自己紹介を促す機能 ===
-
-# ウェルカムメッセージを送信するチャンネルのIDを指定（例：#welcome）
-WELCOME_CHANNEL_ID = 1354692158187114598  # 実際のウェルカムチャンネルのIDに置き換えてください
-
-# 自己紹介用チャンネルのID（すでに定義済みの場合は再利用）
-SELF_INTRO_CHANNEL_ID = 1292752418223951892  # 自己紹介チャンネルのID
-
-# ルールチャンネルのID（ルールを確認してほしい場合）
-RULES_CHANNEL_ID = 1354690000000000000  # 実際のルールチャンネルのIDに置き換えてください
     
     # ② コマンド処理（例：/neko）
     if message.content == "/neko":
@@ -226,6 +216,17 @@ RULES_CHANNEL_ID = 1354690000000000000  # 実際のルールチャンネルのID
     if message.author.bot:
         return
 
+
+# === サーバー参加時に自己紹介を促す機能 ===
+
+# ウェルカムメッセージを送信するチャンネルのIDを指定（例：#welcome）
+WELCOME_CHANNEL_ID = 1354692158187114598  # 実際のウェルカムチャンネルのIDに置き換えてください
+
+# 自己紹介用チャンネルのID（すでに定義済みの場合は再利用）
+SELF_INTRO_CHANNEL_ID = 1292752418223951892  # 自己紹介チャンネルのID
+
+# ルールチャンネルのID（ルールを確認してほしい場合）
+RULES_CHANNEL_ID = 1354690000000000000  # 実際のルールチャンネルのIDに置き換えてください
 @client.event
 async def on_member_join(member):
     # サーバー内のウェルカムチャンネルを取得
