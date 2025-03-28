@@ -207,6 +207,24 @@ SELF_INTRO_CHANNEL_ID = 1292752418223951892  # 自己紹介チャンネルのID
 
 # ルールチャンネルのID（ルールを確認してほしい場合）
 RULES_CHANNEL_ID = 1354690000000000000  # 実際のルールチャンネルのIDに置き換えてください
+    
+    # ② コマンド処理（例：/neko）
+    if message.content == "/neko":
+        await message.channel.send("にゃーん!")
+
+
+
+    if message.content[:6] == "/valo:":
+        await message.channel.send(
+            f'https://tracker.gg/valorant/profile/riot/{meｓsage.content[6:len(meｓsage.content)]}/overview'
+        )
+    if message.content[:6] == "/apex:":
+        await message.channel.send(
+            f'https://apex.tracker.gg/apex/profile/origin/{meｓsage.content[6:len(meｓsage.content)]}/overview'
+        )
+
+    if message.author.bot:
+        return
 
 @client.event
 async def on_member_join(member):
@@ -234,24 +252,6 @@ async def on_member_join(member):
         except Exception as e:
             print(f"ウェルカムメッセージ送信エラー: {e}")
 
-    
-    # ② コマンド処理（例：/neko）
-    if message.content == "/neko":
-        await message.channel.send("にゃーん!")
-
-
-
-    if message.content[:6] == "/valo:":
-        await message.channel.send(
-            f'https://tracker.gg/valorant/profile/riot/{meｓsage.content[6:len(meｓsage.content)]}/overview'
-        )
-    if message.content[:6] == "/apex:":
-        await message.channel.send(
-            f'https://apex.tracker.gg/apex/profile/origin/{meｓsage.content[6:len(meｓsage.content)]}/overview'
-        )
-
-    if message.author.bot:
-        return
 
 @client.event
 async def on_ready():
