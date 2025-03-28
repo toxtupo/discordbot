@@ -28,6 +28,7 @@ SELF_INTRO_CHANNEL_ID = 1292752418223951892  # 自己紹介用チャンネルの
 RULES_CHANNEL_ID = 1292752495155875860         # ルールチャンネルのID
 TARGET_CHANNEL_ID = 1354692158187114598        # リアクションロール用メッセージが投稿されているチャンネルのID
 TARGET_MESSAGE_ID = 1354713468259008657        # リアクションロール用メッセージのID
+CUSTOM_RECRUIT_CHANNEL_ID = 1354674412418502858  # カスタム募集用チャンネルのID（このチャンネル内でのみ募集スレッド作成機能を実行）
 
 # ロールID
 ACCESS_ROLE_ID = 1347884514940031027  # 自己紹介完了後に付与される閲覧可能ロールのID
@@ -134,6 +135,25 @@ async def on_message(message):
             else:
                 print(f"{message.author.name} は既にロール {role.name} を持っています。")
 
+
+# ----- 自動スレッド作成機能（カスタム募集チャンネルのみ） -----
+    if (
+        message.channel.id == CUSTOM_RECRUIT_CHANNEL_ID
+        and "募集" in message.content
+        and any(role != message.guild.default_role for role in message.role_mentions)
+    ):
+        try:
+            thread_name = f"{message.author.display_name} の募集"
+            thread = await message.create_thread(
+                name=thread_name,
+                auto_archive_duration=1440  # 24時間で自動アーカイブ
+            )
+            await thread.send("募集についての質問や相談は本スレッドでお願いします！")
+            print(f"スレッド '{thread_name}' を作成しました。")
+        except Exception as e:
+            print(f"スレッド作成エラー: {e}")
+
+    
     # /neko コマンドの処理
     if message.content == "/neko":
         await message.channel.send("にゃーん!")
@@ -175,6 +195,9 @@ async def on_member_join(member):
             print(f"ウェルカムメッセージを {member.name} さんに送信しました。")
         except Exception as e:
             print(f"ウェルカムメッセージ送信エラー: {e}")
+
+
+
 
 # === Botの起動 ===
 server_thread()  # サーバー関連の機能（例: keep_alive）を起動
