@@ -197,6 +197,44 @@ async def on_message(message):
             else:
                 print(f"{message.author.name} は既にロール {role.name} を持っています。")
 
+# === サーバー参加時に自己紹介を促す機能 ===
+
+# ウェルカムメッセージを送信するチャンネルのIDを指定（例：#welcome）
+WELCOME_CHANNEL_ID = 1354692158187114598  # 実際のウェルカムチャンネルのIDに置き換えてください
+
+# 自己紹介用チャンネルのID（すでに定義済みの場合は再利用）
+SELF_INTRO_CHANNEL_ID = 1292752418223951892  # 自己紹介チャンネルのID
+
+# ルールチャンネルのID（ルールを確認してほしい場合）
+RULES_CHANNEL_ID = 1354690000000000000  # 実際のルールチャンネルのIDに置き換えてください
+
+@client.event
+async def on_member_join(member):
+    # サーバー内のウェルカムチャンネルを取得
+    welcome_channel = member.guild.get_channel(WELCOME_CHANNEL_ID)
+    # 自己紹介チャンネルを取得し、メンション形式（<#ID>）に変換
+    self_intro_channel = member.guild.get_channel(SELF_INTRO_CHANNEL_ID)
+    intro_link = self_intro_channel.mention if self_intro_channel else "自己紹介チャンネル"
+    
+    # ルールチャンネルの取得とリンク生成
+    rules_channel = member.guild.get_channel(RULES_CHANNEL_ID)
+    rules_link = rules_channel.mention if rules_channel else "ルールチャンネル"
+    
+    if welcome_channel:
+        welcome_message = (
+            f"ようこそ {member.mention} さん！\n"
+            f"サーバーに参加いただきありがとうございます！\n"
+            f"まずは、以下のルールチャンネルをご確認ください：{rules_link}\n"
+            f"ルールをご理解いただいた上で、{intro_link} にある自己紹介チャンネルにて自己紹介をお願いします！\n"
+            f"自己紹介後、他のチャンネルが閲覧できるようになります！"
+        )
+        try:
+            await welcome_channel.send(welcome_message)
+            print(f"ウェルカムメッセージを {member.name} さんに送信しました。")
+        except Exception as e:
+            print(f"ウェルカムメッセージ送信エラー: {e}")
+
+    
     # ② コマンド処理（例：/neko）
     if message.content == "/neko":
         await message.channel.send("にゃーん!")
