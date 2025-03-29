@@ -125,6 +125,7 @@ async def on_raw_reaction_remove(payload):
         print(f"{member.name} からロール {role.name} を削除しました")
 
 # on_message: メッセージイベントの処理
+MESSAGE_THREAD_MAP = {} #カスタム募集スレッド作成用
 @client.event
 async def on_message(message):
     # Botのメッセージは無視
@@ -149,7 +150,6 @@ async def on_message(message):
 
 
 # ----- 自動スレッド作成機能（カスタム募集チャンネルのみ） -----
-    MESSAGE_THREAD_MAP = {}
     if (
         message.channel.id == CUSTOM_RECRUIT_CHANNEL_ID
         and "カスタム募集" in message.content
