@@ -138,14 +138,12 @@ async def on_message(message):
                 print(f"{message.author.name} は既にロール {role.name} を持っています。")
 
 # ----- 自動スレッド作成機能（カスタム募集チャンネルのみ） -----
-    # 特定のチャンネル、カスタム募集ロール、特定ロール(@everyone以外)のメンションがある場合
     if (
         message.channel.id == CUSTOM_RECRUIT_CHANNEL_ID
         and any(role.id == CUSTOM_RECRUIT_ROLE_ID for role in message.role_mentions)
-        and any(role != message.guild.default_role and role.id != CUSTOM_RECRUIT_ROLE_ID for role in message.role_mentions)
     ):
         try:
-            thread_name = f"{message.author.display_name} の募集"
+            thread_name = f"{message.author.display_name}さんの募集"
             thread = await message.create_thread(
                 name=thread_name,
                 auto_archive_duration=480  # 8時間で自動アーカイブ
