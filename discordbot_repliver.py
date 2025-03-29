@@ -29,6 +29,7 @@ RULES_CHANNEL_ID = 1292752495155875860         # ルールチャンネルのID
 TARGET_CHANNEL_ID = 1354692158187114598        # リアクションロール用メッセージが投稿されているチャンネルのID
 TARGET_MESSAGE_ID = 1354713468259008657        # リアクションロール用メッセージのID
 CUSTOM_RECRUIT_CHANNEL_ID = 1354674412418502858  # カスタム募集用チャンネルのID（このチャンネル内でのみ募集スレッド作成機能を実行）
+CUSTOM_RECRUIT_ROLE_ID = 1355494037490237490  # カスタム募集ロールのID
 
 # ロールID
 ACCESS_ROLE_ID = 1347884514940031027  # 自己紹介完了後に付与される閲覧可能ロールのID
@@ -91,18 +92,6 @@ async def on_raw_reaction_add(payload):
         await member.add_roles(role)
         print(f"{member.name} にロール {role.name} を付与しました")
 
-
-# # ----- 自動スレッド作成機能（カスタム募集チャンネルのみ）の該当メッセージにリアクションされた場合にスレッド延命
-#     if payload.message_id in MESSAGE_THREAD_MAP:
-#         guild = client.get_guild(payload.guild_id)
-#         thread = guild.get_thread(MESSAGE_THREAD_MAP[payload.message_id])
-#         if thread and not thread.archived:
-#             try:
-#                 await thread.send("📌 リアクションがありました！（自動アーカイブを延長）")
-#                 print(f"スレッド {thread.name} を延命しました。")
-#             except Exception as e:
-#                 print(f"スレッド延命エラー: {e}")
-
 # リアクションが削除されたときの処理
 @client.event
 async def on_raw_reaction_remove(payload):
@@ -148,25 +137,25 @@ async def on_message(message):
             else:
                 print(f"{message.author.name} は既にロール {role.name} を持っています。")
 
+# ----- 自動スレッド作成機能（カスタム募集チャンネルのみ） -----
+    # 特定のチャンネル、カスタム募集ロール、特定ロール(@everyone以外)のメンションがある場合
+    if (
+        message.channel.id == CUSTOM_RECRUIT_CHANNEL_ID
+        and any(role.id == CUSTOM_RECRUIT_ROLE_ID for role in message.role_mentions)
+        and any(role != message.guild.default_role and role.id != CUSTOM_RECRUIT_ROLE_ID for role in message.role_mentions)
+    ):
+        try:
+            thread_name = f"{message.author.display_name} の募集"
+            thread = await message.create_thread(
+                name=thread_name,
+                auto_archive_duration=480  # 8時間で自動アーカイブ
+            )
+            await thread.send(f"{message.author.display_name}さんの募集についての質問や相談は本スレッドでお願いします！")
+            print(f"スレッド '{thread_name}' を作成しました。")
+        except Exception as e:
+            print(f"スレッド作成エラー: {e}")
 
-# # ----- 自動スレッド作成機能（カスタム募集チャンネルのみ） -----
-#     if (
-#         message.channel.id == CUSTOM_RECRUIT_CHANNEL_ID
-#         and "カスタム募集" in message.content
-#         and any(role != message.guild.default_role for role in message.role_mentions)
-#     ):
-#         try:
-#             thread_name = f"{message.author.display_name} の募集"
-#             thread = await message.create_thread(
-#                 name=thread_name,
-#                 auto_archive_duration=480  # 8時間で自動アーカイブ
-#             )
-#             await thread.send(f"{message.author.display_name}さんの募集についての質問や相談は本スレッドでお願いします！")
-#             # メッセージとスレッドをマッピング
-#             MESSAGE_THREAD_MAP[message.id] = thread.id
-#             print(f"スレッド '{thread_name}' を作成しました。")
-#         except Exception as e:
-#             print(f"スレッド作成エラー: {e}")
+    
     
     # /neko コマンドの処理
     if message.content == "/neko":
