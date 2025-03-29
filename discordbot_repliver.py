@@ -142,6 +142,9 @@ async def on_message(message):
         message.channel.id == CUSTOM_RECRUIT_CHANNEL_ID
         and any(role.id == CUSTOM_RECRUIT_ROLE_ID for role in message.role_mentions)
     ):
+        print(f"受信メッセージ: {message.content}")
+        print(f"メンションされたロール一覧: {[role.id for role in message.role_mentions]}")
+
         try:
             thread_name = f"{message.author.display_name}さんの募集"
             thread = await message.create_thread(
