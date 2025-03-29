@@ -137,7 +137,7 @@ async def on_message(message):
             else:
                 print(f"{message.author.name} は既にロール {role.name} を持っています。")
 
-# ----- 自動スレッド作成機能（カスタム募集チャンネルのみ） -----
+    # ----- 自動スレッド作成機能（カスタム募集チャンネルのみ） -----
     if (
         message.channel.id == CUSTOM_RECRUIT_CHANNEL_ID
         and any(role.id == CUSTOM_RECRUIT_ROLE_ID for role in message.role_mentions)
