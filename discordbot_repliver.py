@@ -149,7 +149,7 @@ async def on_message(message):
 
 
 # ----- 自動スレッド作成機能（カスタム募集チャンネルのみ） -----
-MESSAGE_THREAD_MAP = {}
+    MESSAGE_THREAD_MAP = {}
     if (
         message.channel.id == CUSTOM_RECRUIT_CHANNEL_ID
         and "カスタム募集" in message.content
