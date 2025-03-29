@@ -199,45 +199,45 @@ async def on_member_join(member):
         except Exception as e:
             print(f"ウェルカムメッセージ送信エラー: {e}")
 
-# /lol: コマンドの処理（League of Legendsの情報を取得）
-    if message.content.startswith("/lol "):
-        try:
-            raw_name = message.content[5:].strip()
-            if "#" not in raw_name:
-                await message.channel.send("正しい形式で入力してください（例：/lol こんにちは#0902）")
-                return
+# # /lol: コマンドの処理（League of Legendsの情報を取得）
+#     if message.content.startswith("/lol "):
+#         try:
+#             raw_name = message.content[5:].strip()
+#             if "#" not in raw_name:
+#                 await message.channel.send("正しい形式で入力してください（例：/lol こんにちは#0902）")
+#                 return
 
-            name, tag = raw_name.split("#")
-            encoded_name = name.replace(" ", "%20")
-            url_name = f"{encoded_name}-{tag}"
+#             name, tag = raw_name.split("#")
+#             encoded_name = name.replace(" ", "%20")
+#             url_name = f"{encoded_name}-{tag}"
 
-            url = f"https://www.leagueofgraphs.com/summoner/ja/{url_name}"
-            import requests
-            from bs4 import BeautifulSoup
+#             url = f"https://www.leagueofgraphs.com/summoner/ja/{url_name}"
+#             import requests
+#             from bs4 import BeautifulSoup
 
-            response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-            soup = BeautifulSoup(response.text, "html.parser")
+#             response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+#             soup = BeautifulSoup(response.text, "html.parser")
 
-            level_element = soup.find("span", class_="profile-icon-level")
-            level = level_element.text.strip() if level_element else "不明"
+#             level_element = soup.find("span", class_="profile-icon-level")
+#             level = level_element.text.strip() if level_element else "不明"
 
-            lane_elements = soup.select(".description .position-stats .position")
-            lane_stats = [el.text.strip() for el in lane_elements]
-            lanes_text = ", ".join(lane_stats) if lane_stats else "情報なし"
+#             lane_elements = soup.select(".description .position-stats .position")
+#             lane_stats = [el.text.strip() for el in lane_elements]
+#             lanes_text = ", ".join(lane_stats) if lane_stats else "情報なし"
 
-            rank_block = soup.select_one(".ranking span")
-            current_rank = rank_block.text.strip() if rank_block else "不明"
+#             rank_block = soup.select_one(".ranking span")
+#             current_rank = rank_block.text.strip() if rank_block else "不明"
 
-            await message.channel.send(
-                f"**ユーザ名：** {raw_name}\n"
-                f"**各レーンの使用回数：** {lanes_text}\n"
-                f"**アカウントレベル：** {level}\n"
-                f"**最高ランク：** -\n"
-                f"**現在ランク：** {current_rank}"
-            )
-        except Exception as e:
-            print(f"LoL情報取得エラー: {e}")
-            await message.channel.send("LoLの情報を取得できませんでした。ユーザ名が正しいか確認してください。")
+#             await message.channel.send(
+#                 f"**ユーザ名：** {raw_name}\n"
+#                 f"**各レーンの使用回数：** {lanes_text}\n"
+#                 f"**アカウントレベル：** {level}\n"
+#                 f"**最高ランク：** -\n"
+#                 f"**現在ランク：** {current_rank}"
+#             )
+#         except Exception as e:
+#             print(f"LoL情報取得エラー: {e}")
+#             await message.channel.send("LoLの情報を取得できませんでした。ユーザ名が正しいか確認してください。")
 
 
 # === Botの起動 ===
