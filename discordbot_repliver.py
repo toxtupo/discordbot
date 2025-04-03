@@ -20,6 +20,7 @@ intents.members = True            # メンバーの参加/退出等のイベン�
 intents.message_content = True    # メッセージ内容を取得（コマンド処理用）
 intents.guilds = True             # サーバー情報を取得
 intents.reactions = True          # リアクションのイベントを取得
+intents.presences = True
 
 client = discord.Client(intents=intents)
 
@@ -154,6 +155,28 @@ async def on_message(message):
             print(f"スレッド '{thread_name}' を作成しました。")
         except Exception as e:
             print(f"スレッド作成エラー: {e}")
+
+
+
+    # /games コマンド
+    if message.content == "/gamesls":
+        activity_counts = {}
+
+        for member in message.guild.members:
+            for activity in member.activities:
+                if activity.type == discord.ActivityType.playing and activity.name:
+                    game_name = activity.name
+                    activity_counts[game_name] = activity_counts.get(game_name, 0) + 1
+
+        if activity_counts:
+            result = "🎮 サーバー内の現在のゲーム状況\n\n"
+            for game, count in activity_counts.items():
+                result += f"{game}：{count}人\n"
+        else:
+            result = "現在ゲームをプレイしているメンバーはいません。"
+
+        await message.channel.send(result)
+
 
     
     
