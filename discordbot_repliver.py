@@ -230,7 +230,10 @@ async def on_message(message):
         # 重複チェック
         if os.path.exists(PROFILE_FILE):
             with open(PROFILE_FILE, "r", encoding="utf-8") as f:
+            try:
                 profiles = json.load(f)
+            except json.JSONDecodeError:
+                profiles = {}  # 中身が空の場合は空の辞書にする
                 if nickname in profiles and profiles[nickname]["user_id"] != message.author.id:
                     await message.channel.send("そのニックネームはもう使われてるみたい…！")
                     return
