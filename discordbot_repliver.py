@@ -35,20 +35,10 @@ TARGET_MESSAGE_ID = 1354713468259008657        # リアクションロール用�
 CUSTOM_RECRUIT_CHANNEL_ID = 1352877089501483059  # カスタム募集用チャンネルのID（このチャンネル内でのみ募集スレッド作成機能を実行）
 CUSTOM_RECRUIT_ROLE_ID = 1355494037490237490  # カスタム募集ロールのID
 PROFILE_CHANNEL_ID = 1354674412418502858    #profile登録チャンネルID
-PROFILE_PATH = os.path.join(os.path.dirname(__file__), "profiles.json")
+PROFILE_FILE = "profiles.json"
 ACCESS_ROLE_ID = 1347884514940031027  # 自己紹介完了後に付与される閲覧可能ロールのID
-
-# JSON読み込み
-def load_profiles():
-    if not os.path.exists(PROFILE_PATH):
-        return {}
-    with open(PROFILE_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-# JSON書き込み
-def save_profiles(data):
-    with open(PROFILE_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+# 登録中ユーザーの一時管理
+user_profile_sessions = {}  # {user_id: {"nickname": str, "thread": discord.Thread, "lines": []}}
 
 # リアクションとロールの対応（絵文字: ロールID）
 REACTION_ROLE_MAP = {
@@ -208,40 +198,93 @@ async def on_message(message):
         await message.channel.send(
             f'https://apex.tracker.gg/apex/profile/origin/{message.content[6:]}/overview'
         )
-    #★★profile登録コマンド
-    # プロフィール登録: /setp nickname\n本文（複数行）
+#★★profile登録コマンド------------------------------------------------------------------------------------
+ # スレッドでのプロフィール入力中処理
+    if message.channel.type == discord.ChannelType.public_thread:
+        for uid, sess in user_profile_sessions.items():
+            if sess["thread"].id == message.channel.id and message.author.id == uid:
+                if message.content.lower().strip() == "完了":
+                    content = "\n".join(sess["lines"]).strip()
+                    if not content:
+                        await message.channel.send("なんにも書いてないみたい…！")
+                        return
+
+                    success, msg = save_profile(sess["nickname"], uid, content)
+                    await message.channel.send(msg)
+                    await message.channel.delete()
+                    del user_profile_sessions[uid]
+                else:
+                    if len(sess["lines"]) >= 10:
+                        await message.channel.send("ごめんね、10行までしかかけないの〜！")
+                    else:
+                        sess["lines"].append(message.content)
+                return
+
+    # プロフィール設定開始（コマンド受付：/setp ニックネーム）
     if message.channel.id == PROFILE_CHANNEL_ID and message.content.startswith("/setp "):
+        nickname = message.content[6:].strip()
+        if not nickname:
+            await message.channel.send("ニックネーム、わすれてるよ〜！")
+            return
+
+        # 重複チェック
+        if os.path.exists(PROFILE_FILE):
+            with open(PROFILE_FILE, "r", encoding="utf-8") as f:
+                profiles = json.load(f)
+                if nickname in profiles and profiles[nickname]["user_id"] != message.author.id:
+                    await message.channel.send("そのニックネームはもう使われてるみたい…！")
+                    return
+
         try:
-            lines = message.content.split('\n')
-            header = lines[0].strip()
-            if len(lines) < 2:
-                await message.channel.send("プロフィール本文が見つかりません。2行目以降に入力してください。")
-                return
-            nickname = header[5:].strip()  # "/setp "以降をニックネームとして抽出
-
-            profiles = load_profiles()
-            if nickname in profiles:
-                await message.channel.send(f"そのニックネーム「{nickname}」は既に使われています！")
-                return
-
-            content = "\n".join(lines[1:]).strip()
-            profiles[nickname] = {
-                "user_id": message.author.id,
-                "profile": content
+            thread = await message.channel.create_thread(
+                name=f"{nickname} のぷろふぃーるとうろく✏️",
+                type=discord.ChannelType.public_thread,
+                auto_archive_duration=60
+            )
+            await thread.send(f"{message.author.mention} さん！ぷろふぃーるを10行までここに書いてねっ！\nぜんぶかけたら「完了」って送ってね〜！")
+            user_profile_sessions[message.author.id] = {
+                "nickname": nickname,
+                "thread": thread,
+                "lines": []
             }
-            save_profiles(profiles)
-            await message.channel.send(f"ニックネーム「{nickname}」でプロフィールを登録しました！")
         except Exception as e:
-            print(f"プロフィール登録エラー: {e}")
-            await message.channel.send("プロフィールの登録に失敗しました。")
+            print("スレッド作成エラー:", e)
+            await message.channel.send("スレッドつくれなかったよ〜ごめんね…！")
 
-    # プロフィール表示（例: /yuto）
-    elif message.content.startswith("/") and len(message.content) > 1:
-        nickname = message.content[1:].strip()
-        profiles = load_profiles()
-        if nickname in profiles:
-            await message.channel.send(f"📘 **{nickname}のプロフィール**\n{profiles[nickname]['profile']}")
+    # プロフィール表示機能（例：/yuto）
+    if message.content.startswith("/"):
+        command = message.content[1:]
+        if os.path.exists(PROFILE_FILE):
+            with open(PROFILE_FILE, "r", encoding="utf-8") as f:
+                profiles = json.load(f)
+                if command in profiles:
+                    await message.channel.send(f"📝 **{command}** のプロフィール\n```{profiles[command]['content']}```")
+                    return
+        # なければ無視 or メッセージ出してもいい
 
+
+# プロフィール保存用関数
+def save_profile(nickname, user_id, content):
+    try:
+        if os.path.exists(PROFILE_FILE):
+            with open(PROFILE_FILE, "r", encoding="utf-8") as f:
+                profiles = json.load(f)
+        else:
+            profiles = {}
+
+        # 重複チェック（別ユーザーが既に使用していないか）
+        for nick, data in profiles.items():
+            if nick == nickname and data["user_id"] != user_id:
+                return False, "そのニックネームはもう使われてるみたい…！"
+
+        # 上書きOK
+        profiles[nickname] = {"user_id": user_id, "content": content}
+        with open(PROFILE_FILE, "w", encoding="utf-8") as f:
+            json.dump(profiles, f, indent=2, ensure_ascii=False)
+        return True, "とうろくできたよ〜！ありがとねっ"
+    except Exception as e:
+        print("プロフィール保存エラー:", e)
+        return False, "なんかうまくいかなかったかも…！"
 
 
 
