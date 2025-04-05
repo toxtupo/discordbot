@@ -35,7 +35,7 @@ TARGET_MESSAGE_ID = 1354713468259008657        # リアクションロール用�
 CUSTOM_RECRUIT_CHANNEL_ID = 1352877089501483059  # カスタム募集用チャンネルのID（このチャンネル内でのみ募集スレッド作成機能を実行）
 CUSTOM_RECRUIT_ROLE_ID = 1355494037490237490  # カスタム募集ロールのID
 PROFILE_CHANNEL_ID = 1354674412418502858    #profile登録チャンネルID
-PROFILE_FILE = "profiles.json"
+PROFILE_FILE = "/tmp/profiles.json"
 ACCESS_ROLE_ID = 1347884514940031027  # 自己紹介完了後に付与される閲覧可能ロールのID
 # 登録中ユーザーの一時管理
 user_profile_sessions = {}  # {user_id: {"nickname": str, "thread": discord.Thread, "lines": []}}
