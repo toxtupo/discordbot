@@ -8,6 +8,7 @@ from server import server_thread
 import dotenv
 import requests
 from bs4 import BeautifulSoup
+import json
 
 # .envから環境変数（TOKEN）を読み込む
 dotenv.load_dotenv()
@@ -33,9 +34,21 @@ TARGET_CHANNEL_ID = 1354692158187114598        # リアクションロール用�
 TARGET_MESSAGE_ID = 1354713468259008657        # リアクションロール用メッセージのID
 CUSTOM_RECRUIT_CHANNEL_ID = 1352877089501483059  # カスタム募集用チャンネルのID（このチャンネル内でのみ募集スレッド作成機能を実行）
 CUSTOM_RECRUIT_ROLE_ID = 1355494037490237490  # カスタム募集ロールのID
-
-# ロールID
+PROFILE_CHANNEL_ID = 1354674412418502858    #profile登録チャンネルID
+PROFILE_PATH = os.path.join(os.path.dirname(__file__), "profiles.json")
 ACCESS_ROLE_ID = 1347884514940031027  # 自己紹介完了後に付与される閲覧可能ロールのID
+
+# JSON読み込み
+def load_profiles():
+    if not os.path.exists(PROFILE_PATH):
+        return {}
+    with open(PROFILE_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+# JSON書き込み
+def save_profiles(data):
+    with open(PROFILE_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 # リアクションとロールの対応（絵文字: ロールID）
 REACTION_ROLE_MAP = {
@@ -195,6 +208,42 @@ async def on_message(message):
         await message.channel.send(
             f'https://apex.tracker.gg/apex/profile/origin/{message.content[6:]}/overview'
         )
+    #★★profile登録コマンド
+    # プロフィール登録: /setp nickname\n本文（複数行）
+    if message.channel.id == PROFILE_CHANNEL_ID and message.content.startswith("/setp "):
+        try:
+            lines = message.content.split('\n')
+            header = lines[0].strip()
+            if len(lines) < 2:
+                await message.channel.send("プロフィール本文が見つかりません。2行目以降に入力してください。")
+                return
+            nickname = header[5:].strip()  # "/setp "以降をニックネームとして抽出
+
+            profiles = load_profiles()
+            if nickname in profiles:
+                await message.channel.send(f"そのニックネーム「{nickname}」は既に使われています！")
+                return
+
+            content = "\n".join(lines[1:]).strip()
+            profiles[nickname] = {
+                "user_id": message.author.id,
+                "profile": content
+            }
+            save_profiles(profiles)
+            await message.channel.send(f"ニックネーム「{nickname}」でプロフィールを登録しました！")
+        except Exception as e:
+            print(f"プロフィール登録エラー: {e}")
+            await message.channel.send("プロフィールの登録に失敗しました。")
+
+    # プロフィール表示（例: /yuto）
+    elif message.content.startswith("/") and len(message.content) > 1:
+        nickname = message.content[1:].strip()
+        profiles = load_profiles()
+        if nickname in profiles:
+            await message.channel.send(f"📘 **{nickname}のプロフィール**\n{profiles[nickname]['profile']}")
+
+
+
 
 # on_member_join: サーバー参加時にウェルカムメッセージを送信し、自己紹介を促す
 @client.event
