@@ -233,10 +233,14 @@ async def on_message(message):
                 with open(PROFILE_FILE, "r", encoding="utf-8") as f:
                     profiles = json.load(f)
             except json.JSONDecodeError:
-                profiles = {}  # 中身が空の場合は空の辞書にする
-                if nickname in profiles and profiles[nickname]["user_id"] != message.author.id:
-                    await message.channel.send("そのニックネームはもう使われてるみたい…！")
-                    return
+                profiles = {}  # 空ファイルなどによるデコード失敗対応
+        else:
+            profiles = {}
+
+        if nickname in profiles and profiles[nickname]["user_id"] != message.author.id:
+            await message.channel.send("そのニックネームはもう使われてるみたい…！")
+            return
+
 
         try:
             thread = await message.channel.create_thread(
