@@ -279,8 +279,9 @@ async def on_message(message):
 def save_profile(nickname, user_id, content):
     try:
         # Google Sheets 認証設定
+        # グローバルスコープで初期化済の `creds_dict` を使う
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_name("google_creds.json", scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
 
         # シート名（またはスプレッドシートID）で開く
