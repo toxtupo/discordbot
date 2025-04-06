@@ -265,23 +265,25 @@ async def on_message(message):
 
     # プロフィール表示機能（例：/yuto）
     if message.content.startswith("/p"):
-        command = message.content[3:].strip()  # "/p " の後ろのニックネームだけ取り出す
-
+        command = message.content[3:].strip()
+    
         try:
-            # スプレッドシート接続
+            # Google Sheets 接続
             scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
             creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
             client_gs = gspread.authorize(creds)
             sheet = client_gs.open("プロフィールリスト").sheet1
     
-            records = sheet.get_all_records()  # 辞書形式のリストで取得
-            for row in records:
-                if row["nickname"] == command:
-                    raw = row["content"]
-                    content = raw.strip('"')  # ダブルクォーテーションを除去
+            values = sheet.get_all_values()  # 2次元リストで全データ取得
+            headers = values[0]
+            rows = values[1:]  # ヘッダーを除いたデータ
+    
+            for row in rows:
+                data = dict(zip(headers, row))  # ヘッダーと行を辞書に
+                if data["nickname"] == command:
+                    content = data["content"]
                     await message.channel.send(f"📝 **{command}** のプロフィール\n```{content}```")
                     return
-
     
             await message.channel.send("そのプロフィール、見つからなかったよ〜！")
         except Exception as e:
