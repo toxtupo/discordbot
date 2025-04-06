@@ -272,7 +272,7 @@ async def on_message(message):
             scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
             creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
             client_gs = gspread.authorize(creds)
-            sheet = client_gs.open("discord_profile").sheet1
+            sheet = client_gs.open("プロフィールリスト").sheet1
     
             records = sheet.get_all_records()  # 辞書形式のリストで取得
             for row in records:
