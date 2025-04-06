@@ -16,6 +16,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 # .envから環境変数（TOKEN）を読み込む
 dotenv.load_dotenv()
 TOKEN = os.environ.get("TOKEN")
+creds_json = os.environ["GOOGLE_CREDS_JSON"]
+creds_dict = json.loads(creds_json)
 
 # === Botの設定 ===
 # DiscordのIntentsを設定（必要なイベントを受け取るため）
