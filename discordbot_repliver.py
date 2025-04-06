@@ -264,28 +264,33 @@ async def on_message(message):
             await message.channel.send("スレッドつくれなかったよ〜ごめんね…！")
 
     # プロフィール表示機能（例：/yuto）
-    # プロフィール表示機能（例：/yuto）
     if message.content.startswith("/"):
         command = message.content[1:]
-    
+
         try:
             # スプレッドシート接続
             scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
             creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
             client_gs = gspread.authorize(creds)
             sheet = client_gs.open("discord_profile").sheet1  # ←スプレッドシート名を正確に！
-    
+
             records = sheet.get_all_records()  # 辞書形式のリストで取得
+            nicknames = [row["nickname"] for row in records]
+
+            if command not in nicknames:
+                return  # 登録されてないニックネームなら完全スルー（他のコマンド処理に干渉しない）
+
             for row in records:
                 if row["nickname"] == command:
                     await message.channel.send(f"📝 **{command}** のプロフィール\n```{row['content']}```")
                     return
-    
-            # なければ↓を返す
+
+            # 念のため fallback
             await message.channel.send("そのプロフィール、見つからなかったよ〜！")
         except Exception as e:
             print("プロフィール表示エラー:", e)
             await message.channel.send("よみこみに失敗しちゃった…ごめんね〜！")
+
 
 
 # プロフィール保存用関数
