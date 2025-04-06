@@ -282,7 +282,7 @@ async def on_message(message):
     
             await message.channel.send("そのプロフィール、見つからなかったよ〜！")
         except Exception as e:
-            print("プロフィール表示エラー:", e)
+            print("プロフィール表示エラー:", repr(e))
             await message.channel.send("よみこみに失敗しちゃった…ごめんね〜！")
 
 
