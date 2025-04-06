@@ -9,6 +9,9 @@ import dotenv
 import requests
 from bs4 import BeautifulSoup
 import json
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
 
 # .envから環境変数（TOKEN）を読み込む
 dotenv.load_dotenv()
@@ -273,25 +276,35 @@ async def on_message(message):
 # プロフィール保存用関数
 def save_profile(nickname, user_id, content):
     try:
-        if os.path.exists(PROFILE_FILE):
-            with open(PROFILE_FILE, "r", encoding="utf-8") as f:
-                profiles = json.load(f)
-        else:
-            profiles = {}
+        # Google Sheets 認証設定
+        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_name("google_creds.json", scope)
+        client = gspread.authorize(creds)
 
-        # 重複チェック（別ユーザーが既に使用していないか）
-        for nick, data in profiles.items():
-            if nick == nickname and data["user_id"] != user_id:
+        # シート名（またはスプレッドシートID）で開く
+        sheet = client.open("プロフィールリスト").sheet1  # スプレッドシートのタイトルに合わせてください
+
+        # 重複チェック（nickname が既にあるか確認）
+        existing = sheet.col_values(1)  # 1列目に nickname を入れてる前提
+        if nickname in existing:
+            # 既に存在するnicknameは上書き不可（エラーメッセージ）
+            row = existing.index(nickname) + 1
+            row_user_id = sheet.cell(row, 2).value
+            if str(user_id) != row_user_id:
                 return False, "そのニックネームはもう使われてるみたい…！"
 
-        # 上書きOK
-        profiles[nickname] = {"user_id": user_id, "content": content}
-        with open(PROFILE_FILE, "w", encoding="utf-8") as f:
-            json.dump(profiles, f, indent=2, ensure_ascii=False)
+            # 上書きOKな場合（同一ユーザー）
+            sheet.update_cell(row, 3, content)
+            return True, "ぷろふぃーる、あっぷでーとできたよ〜！"
+
+        # 新規追加
+        sheet.append_row([nickname, str(user_id), content])
         return True, "とうろくできたよ〜！ありがとねっ"
+
     except Exception as e:
-        print("プロフィール保存エラー:", e)
+        print("Google Sheets 書き込みエラー:", e)
         return False, "なんかうまくいかなかったかも…！"
+
 
 
 
