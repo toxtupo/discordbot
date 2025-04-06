@@ -264,28 +264,22 @@ async def on_message(message):
             await message.channel.send("スレッドつくれなかったよ〜ごめんね…！")
 
     # プロフィール表示機能（例：/yuto）
-    if message.content.startswith("/"):
-        command = message.content[1:]
+    if message.content.startswith("/p"):
+        command = message.content[3:].strip()  # "/p " の後ろのニックネームだけ取り出す
 
         try:
             # スプレッドシート接続
             scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
             creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
             client_gs = gspread.authorize(creds)
-            sheet = client_gs.open("discord_profile").sheet1  # ←スプレッドシート名を正確に！
-
+            sheet = client_gs.open("discord_profile").sheet1
+    
             records = sheet.get_all_records()  # 辞書形式のリストで取得
-            nicknames = [row["nickname"] for row in records]
-
-            if command not in nicknames:
-                return  # 登録されてないニックネームなら完全スルー（他のコマンド処理に干渉しない）
-
             for row in records:
                 if row["nickname"] == command:
                     await message.channel.send(f"📝 **{command}** のプロフィール\n```{row['content']}```")
                     return
-
-            # 念のため fallback
+    
             await message.channel.send("そのプロフィール、見つからなかったよ〜！")
         except Exception as e:
             print("プロフィール表示エラー:", e)
