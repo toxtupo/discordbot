@@ -277,8 +277,11 @@ async def on_message(message):
             records = sheet.get_all_records()  # 辞書形式のリストで取得
             for row in records:
                 if row["nickname"] == command:
-                    await message.channel.send(f"📝 **{command}** のプロフィール\n```{row['content']}```")
+                    raw = row["content"]
+                    content = raw.strip('"')  # ダブルクォーテーションを除去
+                    await message.channel.send(f"📝 **{command}** のプロフィール\n```{content}```")
                     return
+
     
             await message.channel.send("そのプロフィール、見つからなかったよ〜！")
         except Exception as e:
