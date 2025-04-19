@@ -274,14 +274,11 @@ async def on_message(message):
             client_gs = gspread.authorize(creds)
             sheet = client_gs.open("プロフィールリスト").sheet1
     
-            values = sheet.get_all_values()  # 2次元リストで全データ取得
-            headers = values[0]
-            rows = values[1:]  # ヘッダーを除いたデータ
+            records = sheet.get_all_records()  # ←こっちの方が素直で正確！
     
-            for row in rows:
-                data = dict(zip(headers, row))  # ヘッダーと行を辞書に
-                if data["nickname"] == command:
-                    content = data["content"]
+            for row in records:
+                if row["nickname"] == command:
+                    content = row["content"]
                     await message.channel.send(f"📝 **{command}** のプロフィール\n```{content}```")
                     return
     
