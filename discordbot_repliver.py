@@ -351,6 +351,17 @@ async def on_member_join(member):
         except Exception as e:
             print(f"ウェルカムメッセージ送信エラー: {e}")
 
+# 429エラー状況確認
+async def safe_send(channel, content):
+    try:
+        await channel.send(content)
+    except discord.errors.HTTPException as e:
+        if e.status == 429:  # レートリミットエラー
+            retry_after = int(e.response.headers.get("Retry-After", 1))  # 再試行までの秒数
+            print(f"Rate limit exceeded. Retrying after {retry_after} seconds...")
+            await asyncio.sleep(retry_after)  # 指定時間待機
+            await safe_send(channel, content)  # 再試行
+
 
 # === Botの起動 ===
 server_thread()  # サーバー関連の機能（例: keep_alive）を起動
