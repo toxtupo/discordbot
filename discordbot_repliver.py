@@ -363,6 +363,16 @@ async def safe_send(channel, content):
             await safe_send(channel, content)  # 再試行
 
 
+import logging
+
+# discord.pyの詳細なログを表示する
+logging.basicConfig(level=logging.DEBUG)
+
+@client.event
+async def on_ready():
+    print(f"Logged in as {client.user}")
+
+
 # === Botの起動 ===
 server_thread()  # サーバー関連の機能（例: keep_alive）を起動
 client.run(TOKEN)
