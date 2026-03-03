@@ -18,6 +18,7 @@ dotenv.load_dotenv()
 TOKEN = os.environ.get("TOKEN")
 creds_json = os.environ["GOOGLE_CREDS_JSON"]
 creds_dict = json.loads(creds_json)
+print(f"トークンの確認: {TOKEN[:5]}******")
 
 # === Botの設定 ===
 # DiscordのIntentsを設定（必要なイベントを受け取るため）
